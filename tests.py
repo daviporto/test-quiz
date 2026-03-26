@@ -117,3 +117,28 @@ def test_choice_with_text_exceeding_limit_raises():
     question = Question(title='q6')
     with pytest.raises(Exception):
         question.add_choice('a' * 101)
+
+
+@pytest.fixture
+def question_with_choices():
+    question = Question(title='Capital of France', points=5, max_selections=1)
+    question.add_choice('Berlin', False)
+    question.add_choice('Paris', True)
+    question.add_choice('Rome', False)
+    return question
+
+
+def test_question_has_three_choices(question_with_choices):
+    assert len(question_with_choices.choices) == 3
+
+
+def test_selecting_correct_choice_scores(question_with_choices):
+    paris = next(c for c in question_with_choices.choices if c.text == 'Paris')
+    result = question_with_choices.correct_selected_choices([paris.id])
+    assert result == [paris.id]
+
+
+def test_selecting_wrong_choice_does_not_increase_score(question_with_choices):
+    berlin = next(c for c in question_with_choices.choices if c.text == 'Berlin')
+    result = question_with_choices.correct_selected_choices([berlin.id])
+    assert result == []
